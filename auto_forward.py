@@ -13,7 +13,7 @@ from telethon.sessions import StringSession
 api_id = 30133788
 api_hash = "1f2d2d024eaafe22909fbb1131e1f084"
 
-SESSION = "1BJWap1sBu12igPMZEpMC3foscaa0mT8daXumj_tfMbD_O7YHrpLWDkPTsjOoPkLLop2FmY-S-oRWc6VFiVZtr9N47GucHf7wJ-V6tHxJc3Jr0WKfCE0D_zmePNBvC2FFDQOpll-lIrm4jvaRTN5h5VgZ0ojuizzztD2DyXWn0TIfiGGnqGY5PKy55yb1XES3isbdiibUS1Ns8jtg8kIs45Yei-W5hP_Yybrc38vHL7tHn-4B6ED7jQ5sTqmzBVgqLL-eqhlyyFpbpQSxQt_kzadGAEk7SdQcE83po0H1NhsmZYJdUybNgNihyIgdcnKd3tN6qOmpNfSl0E5HZOrzoSR6wolao9E="  # 👈 your real session here
+SESSION = "1BJWap1sBuxoPpirf3CRQc1Kb-EzGtSU7R5JpKxY_y-Q7FkP9yMMbGnxe1Fpe3weMj93aB2WIs5b2ItSU01EeA7rCYFpCtvFGIwOSjMarD5QU4NjaHreLitgEwySBQleFotnHJP50jZikxSlzphrj8JHHV9lJTLpgJH7lJcXxjPBWUsqhfOGoverVwlrJfsw_tgrxPFLNNT5rDrKOb-kkNUtMQWDaHtUSFcRkdDCic33APIU-KX7eRWk6MKfoc6V_Q3KYnT20Nci65GQ_9EPFU7YaQ1skyxRperHbyOWY55IgGmS0nbE1twfy5xkF1G-syzJbamxAB9iBw9mlB0CnEXvio_bwvwY="  # 👈 your real session here
 
 # ==========================
 # 📡 CHANNELS
