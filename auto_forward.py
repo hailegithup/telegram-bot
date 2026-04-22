@@ -3,12 +3,17 @@ import json
 import os
 import re
 import hashlib
+import asyncio
+import logging
+from telethon.sessions import StringSession
 
 # ==========================
 # 🔑 API
 # ==========================
 api_id = 30133788
 api_hash = "1f2d2d024eaafe22909fbb1131e1f084"
+
+SESSION = "1BJWap1sBu12igPMZEpMC3foscaa0mT8daXumj_tfMbD_O7YHrpLWDkPTsjOoPkLLop2FmY-S-oRWc6VFiVZtr9N47GucHf7wJ-V6tHxJc3Jr0WKfCE0D_zmePNBvC2FFDQOpll-lIrm4jvaRTN5h5VgZ0ojuizzztD2DyXWn0TIfiGGnqGY5PKy55yb1XES3isbdiibUS1Ns8jtg8kIs45Yei-W5hP_Yybrc38vHL7tHn-4B6ED7jQ5sTqmzBVgqLL-eqhlyyFpbpQSxQt_kzadGAEk7SdQcE83po0H1NhsmZYJdUybNgNihyIgdcnKd3tN6qOmpNfSl0E5HZOrzoSR6wolao9E="  # 👈 your real session here
 
 # ==========================
 # 📡 CHANNELS
@@ -21,10 +26,6 @@ source_channels = [
 ]
 
 destination_channel = "@AAUCentral"
-
-from telethon.sessions import StringSession
-
-SESSION = "1BJWap1sBu12igPMZEpMC3foscaa0mT8daXumj_tfMbD_O7YHrpLWDkPTsjOoPkLLop2FmY-S-oRWc6VFiVZtr9N47GucHf7wJ-V6tHxJc3Jr0WKfCE0D_zmePNBvC2FFDQOpll-lIrm4jvaRTN5h5VgZ0ojuizzztD2DyXWn0TIfiGGnqGY5PKy55yb1XES3isbdiibUS1Ns8jtg8kIs45Yei-W5hP_Yybrc38vHL7tHn-4B6ED7jQ5sTqmzBVgqLL-eqhlyyFpbpQSxQt_kzadGAEk7SdQcE83po0H1NhsmZYJdUybNgNihyIgdcnKd3tN6qOmpNfSl0E5HZOrzoSR6wolao9E="
 
 client = TelegramClient(StringSession(SESSION), api_id, api_hash)
 
@@ -44,24 +45,48 @@ def save():
         json.dump(processed, f)
 
 # ==========================
-# 🧹 CLEAN TEXT (REMOVE ADS)
+# 🧹 CLEAN TEXT
 # ==========================
 def clean_text(text):
     if not text:
         return ""
 
-    # remove common spam words
-    spam_words = ["join", "subscribe", "follow", "t.me"]
-    for word in spam_words:
-        text = text.replace(word, "")
+    # remove links
+    text = re.sub(r"http\S+", "", text)
+
+    # remove telegram links
+    text = re.sub(r"t\.me/\S+", "", text)
+
+    # remove @usernames
+    text = re.sub(r"@\w+", "", text)
+
+    # remove spam words
+    text = re.sub(r"(join|subscribe|follow)", "", text, flags=re.IGNORECASE)
+
+    # remove extra spaces
+    text = re.sub(r"\n\s*\n", "\n\n", text)
 
     return text.strip()
 
 # ==========================
-# 🧠 SMART DUPLICATE
+# 🚫 REMOVE NOISE LINES
+# ==========================
+def remove_noise_lines(text):
+    lines = text.split("\n")
+    clean_lines = []
+
+    for line in lines:
+        if any(word in line.lower() for word in ["join", "follow", "subscribe", "@"]):
+            continue
+        clean_lines.append(line)
+
+    return "\n".join(clean_lines)
+
+# ==========================
+# 🧠 DUPLICATE CHECK
 # ==========================
 def get_hash(text):
-    text = clean_text(text.lower())
+    text = clean_text((text or "").lower())
     return hashlib.md5(text.encode()).hexdigest()
 
 print("🚀 PROFESSIONAL BOT RUNNING")
@@ -72,9 +97,7 @@ print("🚀 PROFESSIONAL BOT RUNNING")
 @client.on(events.Album(chats=source_channels))
 async def album_handler(event):
 
-    album_id = str(event.grouped_id)
     text = event.messages[0].text or ""
-
     hash_key = get_hash(text)
 
     if hash_key in processed:
@@ -85,15 +108,18 @@ async def album_handler(event):
     save()
 
     files = [msg.media for msg in event.messages]
-    caption = clean_text(text)
 
-    await client.send_file(
-        destination_channel,
-        files,
-        caption=caption
-    )
+    clean = clean_text(text)
+    clean = remove_noise_lines(clean)
 
-    print("📸 Full album forwarded")
+    # optional branding
+    clean += "\n\n📢 @AAUCentral"
+
+    try:
+        await client.send_file(destination_channel, files, caption=clean)
+        print("📸 Album forwarded clean")
+    except Exception as e:
+        print("Error:", e)
 
 # ==========================
 # ✍ HANDLE NORMAL POSTS
@@ -117,31 +143,29 @@ async def message_handler(event):
     save()
 
     clean = clean_text(text)
+    clean = remove_noise_lines(clean)
 
-    if message.media:
-        await client.send_file(
-            destination_channel,
-            message.media,
-            caption=clean
-        )
-    else:
-        await client.send_message(
-            destination_channel,
-            clean
-        )
+    # optional branding
+    clean += "\n\n📢 @AAUCentral"
 
-    print("✅ Message forwarded clean")
+    try:
+        if message.media:
+            await client.send_file(destination_channel, message.media, caption=clean)
+        else:
+            await client.send_message(destination_channel, clean)
+
+        print("✅ Message forwarded clean")
+
+    except Exception as e:
+        print("Error:", e)
 
 # ==========================
 # 🚀 RUN
 # ==========================
-import asyncio
-import logging
-
 logging.basicConfig(level=logging.INFO)
 
 async def main():
-    print("🚀 BOT RUNNING ON RAILWAY")
+    print("🚀 BOT RUNNING...")
     await client.run_until_disconnected()
 
 with client:
