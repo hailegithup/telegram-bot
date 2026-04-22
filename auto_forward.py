@@ -50,10 +50,6 @@ def clean_text(text):
     if not text:
         return ""
 
-    # remove links
-    text = re.sub(r"http\S+", "", text)
-    text = re.sub(r"@\w+", "", text)
-
     # remove common spam words
     spam_words = ["join", "subscribe", "follow", "t.me"]
     for word in spam_words:
